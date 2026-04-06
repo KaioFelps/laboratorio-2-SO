@@ -4,6 +4,8 @@
 
 using namespace std;
 
+Command::Command(const std::vector<std::string> &args) : arguments_(args) {}
+
 const string &Command::get_program() const { return this->arguments_.front(); }
 
 const vector<char *> Command::get_constant_arguments() const
@@ -61,3 +63,5 @@ void Command::chain_on_success(std::shared_ptr<Command> command)
 {
   this->success_chained_command = make_optional(command);
 }
+
+void Command::turn_into_background_task() { this->is_background_task_ = true; }

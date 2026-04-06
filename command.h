@@ -18,6 +18,9 @@ public:
     Failed,
   };
 
+  Command() = default;
+  explicit Command(const std::vector<std::string> &args);
+
   /**
    * Executa o comando por meio da função `execvp`. O corrente processo será completamente
    * substituído pelo programa representado por este comando.
@@ -42,6 +45,8 @@ public:
 
   void chain_on_success(std::shared_ptr<Command> command);
 
+  void turn_into_background_task();
+
 private:
   State state_ = State::Ready;
   /**
@@ -55,12 +60,12 @@ private:
   /**
    * É o comando a ser executado imediatamente após o atual comando caso ele falhe.
    */
-  std::optional<std::shared_ptr<Command>> failure_chained_command;
+  std::optional<std::shared_ptr<Command>> failure_chained_command = std::nullopt;
   /**
    * É o comando a ser executado imediatamente após o atual comando se ele for executado com
    * sucesso.
    */
-  std::optional<std::shared_ptr<Command>> success_chained_command;
+  std::optional<std::shared_ptr<Command>> success_chained_command = std::nullopt;
 
   const std::string &get_program() const;
   const std::vector<char *> get_constant_arguments() const;
