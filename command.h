@@ -11,7 +11,7 @@
 struct Command
 {
 public:
-  enum class State
+  enum class Status
   {
     Ready,
     Running,
@@ -53,11 +53,13 @@ public:
   std::shared_ptr<Command> get_chained_command_ptr_internal_failure() const;
 
   std::shared_ptr<Command> get_chained_command_ptr_internal_success() const;
-  
+
+  Status get_status() const;
+
   std::string get_command_string() const;
 
 private:
-  State state_ = State::Ready;
+  Status status_ = Status::Ready;
   /**
    * Indica se este comando deve ser executado em segundo plano ou não.
    */
@@ -110,5 +112,30 @@ template <> struct std::formatter<Command> : std::formatter<std::string>
 
     return std::formatter<std::string>::format(
         std::format("C({}, {}, {}, {})", args_str, bg_str, failure_str, success_str), ctx);
+  }
+};
+
+template <> struct std::formatter<Command::Status> : std::formatter<std::string_view>
+{
+  auto format(const Command::Status &status, format_context &ctx) const
+  {
+    std::string_view name;
+    switch (status)
+    {
+    case Command::Status::Failed:
+      name = "Concluído com erro";
+      break;
+    case Command::Status::Ready:
+      name = "Preparado";
+      break;
+    case Command::Status::Running:
+      name = "Em execução";
+      break;
+    case Command::Status::SuccessfullyTerminated:
+      name = "Concluído com sucesso";
+      break;
+    }
+
+    return std::formatter<std::string_view>::format(name, ctx);
   }
 };

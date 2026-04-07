@@ -29,7 +29,7 @@ int Command::run()
   const auto program = this->get_program();
   auto arguments = this->get_constant_arguments();
 
-  this->state_ = Command::State::Running;
+  this->status_ = Command::Status::Running;
 
   return execvp(program.data(), arguments.data());
 }
