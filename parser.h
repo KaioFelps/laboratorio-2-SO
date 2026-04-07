@@ -113,9 +113,4 @@ public:
   std::expected<std::queue<Token>, SyntaxError> tokenize(std::string_view command_line) &&;
 };
 
-class Parser
-{
-public:
-  static std::expected<std::queue<Command>, SyntaxError>
-  parse_commands(std::string_view command_line);
-};
+std::expected<std::queue<Command>, SyntaxError> parse_commands(std::string_view command_line);

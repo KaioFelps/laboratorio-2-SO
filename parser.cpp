@@ -213,8 +213,7 @@ build_queue(const std::vector<RawEntry> &entries, std::size_t from)
   return result;
 }
 
-std::expected<std::queue<Command>, SyntaxError>
-Parser::parse_commands(std::string_view command_line)
+std::expected<std::queue<Command>, SyntaxError> parse_commands(std::string_view command_line)
 {
   auto token_result = Lexer().tokenize(command_line);
   if (!token_result) return std::unexpected(token_result.error());
