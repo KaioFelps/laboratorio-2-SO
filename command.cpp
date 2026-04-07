@@ -1,5 +1,7 @@
 #include "command.h"
+#include <algorithm>
 #include <optional>
+#include <ranges>
 #include <unistd.h>
 
 using namespace std;
@@ -80,4 +82,13 @@ std::shared_ptr<Command> Command::get_chained_command_ptr_internal_failure() con
 std::shared_ptr<Command> Command::get_chained_command_ptr_internal_success() const
 {
   return success_chained_command.value_or(nullptr);
+}
+
+Command::Status Command::get_status() const { return this->status_; }
+
+std::string Command::get_command_string() const
+{
+  // Aparentemente, C++ agora também tem pipes kkk
+  auto command_string = this->arguments_ | views::join_with(' ') | ranges::to<string>();
+  return command_string;
 }

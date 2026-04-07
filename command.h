@@ -53,6 +53,8 @@ public:
   std::shared_ptr<Command> get_chained_command_ptr_internal_failure() const;
 
   std::shared_ptr<Command> get_chained_command_ptr_internal_success() const;
+  
+  std::string get_command_string() const;
 
 private:
   State state_ = State::Ready;
