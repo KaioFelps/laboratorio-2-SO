@@ -1,13 +1,13 @@
 # Mini Shell
+Uma pequena implementação de interpretador shell. É capaz de executar comandos em segundo plano,
+encadear comandos lógicamente ou executar múltiplos comandos em sequência. Não possui modo
+standalone tampouco operadores complexos como `if` ou `for`.
 
 ## Executando
-Executar o programa com a flag `-d` roda o modo de debug — dado um comando, será exebido o
-resultado da análise léxica e a fila de comandos resultante.
-
-Em modo normal, todo comando digitado será transformado numa fila de comandos, e cada um
-será executado de acordo com os metadados do comando. Comandos filhos de outros comandos
-têm preferência sobre os próximos comandos da fila de execução. Essa é uma abordagem híbrida
-entre uma fila simples e uma AST completa.
+Executar o programa com a flag -d ativa o modo de debug: dado um comando, será exibido o
+resultado da análise léxica e a fila de comandos resultante. No modo normal, os comandos são
+interpretados e executados sequencialmente.. No modo normal, todos os comandos são executados
+normalmente.
 
 ## Estrutura
 O programa lida com três tipos de dados principais:
@@ -27,10 +27,24 @@ O programa lida com três tipos de dados principais:
 
 Todos os programas inseridos são executados em processos filhos.
 
+## Implementação
+O Mini Shell utiliza uma abordagem híbrida entre uma fila simples e uma AST (Abstract Syntax Tree).
+Todo comando pode possuir ponteiros para comandos encadeados em caso de sucesso (&&) ou fracasso
+(||). Estes comandos encadeados possuem prioridade de execução sobre a fila principal.
+
+Diferente de shells tradicionais, o Mini Shell não utiliza subshells recursivos para resolver
+agrupamentos. Os comandos são "achatados" (flattened), o que permite que o processo principal
+mantenha a paternidade direta de todos os processos filhos, simplificando o controle de jobs
+e a captura de status de saída. As relações lógicas são resolvidas de forma satisfatóriamente
+equivalente à resolução recursiva com subshells.
+
 ## Limitações
 Não há nenhum operador built-in além dos supracitados. Isso implica o não funcionamento de
 comandos como `exit` ou `cd`. Observe que um built-in é um comando de um Shell, e não um
 executável real.
+
+Ironicamente, `false` e `true` não são operadores, mas executáveis binários reais. Dessarte,
+o Mini Shell consegue lidar com eles nas expressões!
 
 ### Subshells
 Em um shell totalmente funcional, comandos como `(c1 && c2)&`, agrupados por parênteses, são
@@ -39,10 +53,12 @@ executável do shell em modo standalone — executa somente esse único comando 
 
 Para as finalidades deste laboratório, o agrupamento por parênteses serve apenas para viabilizar
 comandos como `(c1 &) && c2`. Dessa forma, o comando `(c1 && c2)&` é equivalente a
-`(c1 &) && (c2 &)`.
+`(c1 &) && (c2 &)`. As portas lógicas funcionam até certo ponto: elas são todas distribuídas
+e subcomandos são achatados.
 
-### Distributividade
-O comando `(c1 && c2) && c3` deveria executar `c3` diante do sucesso de qualquer um deles, isso
-é, deveria gerar a seguinte fila de execução:
-$`C(c1, F, \emptyset, C(c3, F, \emptyset, \emptyset)),\ C(c2, F, \emptyset, C(c3, F, \emptyset, \emptyset))`$.
-No entanto, a propriedade distributiva ainda não foi implementada.
+Em implementações de interpretadores Shell reais, todo grupo de comando (envelopado por
+parênteses) não é achatado, mas sim passado como argumento para o próprio executável do Shell.
+Veja: ao invés de executar a cadeia de comando, o Shell irá executar, no processo filho,
+ele mesmo e passará a cadeia de comandos como argumento, executando em modo standalone ao invés
+do modo interativo ao qual temos acesso pelo terminal. Em suma, um Shell real resolve os grupos
+recursivamente!
