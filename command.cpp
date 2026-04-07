@@ -42,14 +42,14 @@ const optional<reference_wrapper<Command>> Command::get_chained_command() const
   const auto shall_chain_success_command =
       this->status_ == Status::SuccessfullyTerminated || this->is_background_task_;
 
-  if (shall_chain_failure_command && this->failure_chained_command.has_value())
+  if (shall_chain_failure_command && this->failure_chained_command_.has_value())
   {
-    return make_optional(ref(**this->failure_chained_command));
+    return make_optional(ref(**this->failure_chained_command_));
   }
 
-  else if (shall_chain_success_command && this->success_chained_command.has_value())
+  else if (shall_chain_success_command && this->success_chained_command_.has_value())
   {
-    return make_optional(ref(**this->success_chained_command));
+    return make_optional(ref(**this->success_chained_command_));
   }
 
   return nullopt;
@@ -62,26 +62,26 @@ void Command::mark_as_finished(bool successfully)
 
 void Command::chain_on_failure(std::shared_ptr<Command> command)
 {
-  this->failure_chained_command = make_optional(command);
+  this->failure_chained_command_ = make_optional(command);
 }
 
 void Command::chain_on_success(std::shared_ptr<Command> command)
 {
-  this->success_chained_command = make_optional(command);
+  this->success_chained_command_ = make_optional(command);
 }
 
 void Command::turn_into_background_task() { this->is_background_task_ = true; }
 
 const std::vector<std::string> &Command::get_arguments() const { return arguments_; }
 
-std::shared_ptr<Command> Command::get_chained_command_ptr_internal_failure() const
+const std::optional<std::shared_ptr<Command>> &Command::get_failure_chained_command() const
 {
-  return failure_chained_command.value_or(nullptr);
+  return this->failure_chained_command_;
 }
 
-std::shared_ptr<Command> Command::get_chained_command_ptr_internal_success() const
+const std::optional<std::shared_ptr<Command>> &Command::get_success_chained_command() const
 {
-  return success_chained_command.value_or(nullptr);
+  return success_chained_command_;
 }
 
 Command::Status Command::get_status() const { return this->status_; }

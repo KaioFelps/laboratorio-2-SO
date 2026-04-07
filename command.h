@@ -46,13 +46,13 @@ public:
 
   void chain_on_success(std::shared_ptr<Command> command);
 
+  const std::optional<std::shared_ptr<Command>> &get_success_chained_command() const;
+
+  const std::optional<std::shared_ptr<Command>> &get_failure_chained_command() const;
+
   void turn_into_background_task();
 
   const std::vector<std::string> &get_arguments() const;
-
-  std::shared_ptr<Command> get_chained_command_ptr_internal_failure() const;
-
-  std::shared_ptr<Command> get_chained_command_ptr_internal_success() const;
 
   Status get_status() const;
 
@@ -71,12 +71,12 @@ private:
   /**
    * É o comando a ser executado imediatamente após o atual comando caso ele falhe.
    */
-  std::optional<std::shared_ptr<Command>> failure_chained_command = std::nullopt;
+  std::optional<std::shared_ptr<Command>> failure_chained_command_ = std::nullopt;
   /**
    * É o comando a ser executado imediatamente após o atual comando se ele for executado com
    * sucesso.
    */
-  std::optional<std::shared_ptr<Command>> success_chained_command = std::nullopt;
+  std::optional<std::shared_ptr<Command>> success_chained_command_ = std::nullopt;
 
   const std::string &get_program() const;
   const std::vector<char *> get_constant_arguments() const;
@@ -99,15 +99,15 @@ template <> struct std::formatter<Command> : std::formatter<std::string>
     std::string bg_str = cmd.is_background_task() ? "true" : "false";
 
     std::string failure_str = "{}";
-    if (auto failure_cmd = cmd.get_chained_command_ptr_internal_failure())
+    if (const auto &failure_cmd = cmd.get_failure_chained_command())
     {
-      failure_str = std::format("{}", *failure_cmd);
+      failure_str = std::format("{}", **failure_cmd);
     }
 
     std::string success_str = "{}";
-    if (auto success_cmd = cmd.get_chained_command_ptr_internal_success())
+    if (const auto &success_cmd = cmd.get_success_chained_command())
     {
-      success_str = std::format("{}", *success_cmd);
+      success_str = std::format("{}", **success_cmd);
     }
 
     return std::formatter<std::string>::format(
