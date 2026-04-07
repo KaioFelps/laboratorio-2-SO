@@ -36,13 +36,16 @@ const bool Command::is_background_task() const { return this->is_background_task
 
 const optional<reference_wrapper<Command>> Command::get_chained_command() const
 {
-  if (this->state_ == State::Failed && this->failure_chained_command.has_value())
+  const auto shall_chain_failure_command = this->status_ == Status::Failed;
+  const auto shall_chain_success_command =
+      this->status_ == Status::SuccessfullyTerminated || this->is_background_task_;
+
+  if (shall_chain_failure_command && this->failure_chained_command.has_value())
   {
     return make_optional(ref(**this->failure_chained_command));
   }
 
-  else if (this->state_ == State::SuccessfullyTerminated &&
-           this->success_chained_command.has_value())
+  else if (shall_chain_success_command && this->success_chained_command.has_value())
   {
     return make_optional(ref(**this->success_chained_command));
   }
